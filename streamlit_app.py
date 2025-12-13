@@ -12,9 +12,6 @@ st.write("Prediksi risiko gagal bayar kartu kredit menggunakan **Best Model (Ran
 
 st.divider()
 
-# =========================
-# INPUT FORM (RAW FEATURES)
-# =========================
 LIMIT_BAL = st.number_input("LIMIT_BAL", min_value=0.0)
 SEX = st.selectbox("SEX", [1, 2])
 EDUCATION = st.selectbox("EDUCATION", [1, 2, 3, 4])
