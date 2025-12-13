@@ -1,1 +1,12 @@
-streamlit>=1.26.0
+pandas
+numpy
+scikit-learn
+imbalanced-learn
+xgboost
+streamlit
+joblib
+seaborn
+matplotlib
+scipy
+feature-engine
+openpyxl
