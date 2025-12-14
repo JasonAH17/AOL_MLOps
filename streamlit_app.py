@@ -4,6 +4,7 @@ import joblib
 
 model = joblib.load("best_model.pkl")
 
+
 st.set_page_config(
     page_title="Credit Default Prediction",
     layout="centered"
@@ -11,61 +12,163 @@ st.set_page_config(
 
 st.title("💳 Credit Card Default Prediction")
 st.write(
-    "Aplikasi ini memprediksi risiko **gagal bayar kartu kredit** "
-    "menggunakan **Best Random Forest Model (Inference Pipeline)**."
+    "This application predicts the **risk of credit card default** "
+    "based on customer demographic and payment behavior data."
 )
 
 st.divider()
 
-st.subheader("📥 Masukkan Data Nasabah")
 
-LIMIT_BAL = st.number_input("LIMIT_BAL (Credit Limit)", min_value=0.0)
+gender_map = {
+    "Male": 1,
+    "Female": 2
+}
 
-SEX = st.selectbox("SEX (1 = Male, 2 = Female)", [1, 2])
-EDUCATION = st.selectbox("EDUCATION", [1, 2, 3, 4])
-MARRIAGE = st.selectbox("MARRIAGE", [1, 2, 3])
+education_map = {
+    "Graduate School": 1,
+    "University": 2,
+    "High School": 3,
+    "Other": 4
+}
 
-AGE = st.number_input("AGE", min_value=18, max_value=100)
+marriage_map = {
+    "Married": 1,
+    "Single": 2,
+    "Other": 3
+}
 
-st.markdown("### Status Pembayaran (PAY_0 s/d PAY_6)")
-PAY_0 = st.number_input("PAY_0", min_value=-2, max_value=8)
-PAY_2 = st.number_input("PAY_2", min_value=-2, max_value=8)
-PAY_3 = st.number_input("PAY_3", min_value=-2, max_value=8)
-PAY_4 = st.number_input("PAY_4", min_value=-2, max_value=8)
-PAY_5 = st.number_input("PAY_5", min_value=-2, max_value=8)
-PAY_6 = st.number_input("PAY_6", min_value=-2, max_value=8)
+payment_status_map = {
+    "Paid on time": 0,
+    "Paid in full": -1,
+    "No consumption": -2,
+    "1 month late": 1,
+    "2 months late": 2,
+    "3 months late": 3,
+    "4+ months late": 4
+}
 
-st.markdown("### Tagihan Bulanan (BILL_AMT)")
-BILL_AMT1 = st.number_input("BILL_AMT1")
-BILL_AMT2 = st.number_input("BILL_AMT2")
-BILL_AMT3 = st.number_input("BILL_AMT3")
-BILL_AMT4 = st.number_input("BILL_AMT4")
-BILL_AMT5 = st.number_input("BILL_AMT5")
-BILL_AMT6 = st.number_input("BILL_AMT6")
+st.subheader("👤 Customer Information")
 
-st.markdown("### Pembayaran Bulanan (PAY_AMT)")
-PAY_AMT1 = st.number_input("PAY_AMT1")
-PAY_AMT2 = st.number_input("PAY_AMT2")
-PAY_AMT3 = st.number_input("PAY_AMT3")
-PAY_AMT4 = st.number_input("PAY_AMT4")
-PAY_AMT5 = st.number_input("PAY_AMT5")
-PAY_AMT6 = st.number_input("PAY_AMT6")
+col1, col2 = st.columns(2)
+
+with col1:
+    LIMIT_BAL = st.number_input(
+        "Credit Limit",
+        min_value=0.0,
+        help="Total credit limit granted to the customer."
+    )
+
+    SEX = st.selectbox(
+        "Gender",
+        options=list(gender_map.keys()),
+        help="Customer gender."
+    )
+
+    EDUCATION = st.selectbox(
+        "Education Level",
+        options=list(education_map.keys()),
+        help="Highest level of education attained by the customer."
+    )
+
+with col2:
+    AGE = st.number_input(
+        "Age",
+        min_value=18,
+        max_value=100,
+        help="Customer age in years."
+    )
+
+    MARRIAGE = st.selectbox(
+        "Marital Status",
+        options=list(marriage_map.keys()),
+        help="Customer marital status."
+    )
+
+st.divider()
+
+st.subheader("📅 Payment Status History")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    PAY_0 = st.selectbox(
+        "Payment Status (September)",
+        options=list(payment_status_map.keys()),
+        help="Customer payment behavior in September."
+    )
+
+    PAY_2 = st.selectbox(
+        "Payment Status (August)",
+        options=list(payment_status_map.keys()),
+        help="Customer payment behavior in August."
+    )
+
+    PAY_3 = st.selectbox(
+        "Payment Status (July)",
+        options=list(payment_status_map.keys()),
+        help="Customer payment behavior in July."
+    )
+
+with col2:
+    PAY_4 = st.selectbox(
+        "Payment Status (June)",
+        options=list(payment_status_map.keys()),
+        help="Customer payment behavior in June."
+    )
+
+    PAY_5 = st.selectbox(
+        "Payment Status (May)",
+        options=list(payment_status_map.keys()),
+        help="Customer payment behavior in May."
+    )
+
+    PAY_6 = st.selectbox(
+        "Payment Status (April)",
+        options=list(payment_status_map.keys()),
+        help="Customer payment behavior in April."
+    )
+
+st.divider()
+
+
+st.subheader("💳 Billing & Payment Amounts")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    BILL_AMT1 = st.number_input("Bill Amount (September)", help="Bill amount in September.")
+    BILL_AMT2 = st.number_input("Bill Amount (August)")
+    BILL_AMT3 = st.number_input("Bill Amount (July)")
+
+    PAY_AMT1 = st.number_input("Payment Amount (September)", help="Payment made in September.")
+    PAY_AMT2 = st.number_input("Payment Amount (August)")
+    PAY_AMT3 = st.number_input("Payment Amount (July)")
+
+with col2:
+    BILL_AMT4 = st.number_input("Bill Amount (June)")
+    BILL_AMT5 = st.number_input("Bill Amount (May)")
+    BILL_AMT6 = st.number_input("Bill Amount (April)")
+
+    PAY_AMT4 = st.number_input("Payment Amount (June)")
+    PAY_AMT5 = st.number_input("Payment Amount (May)")
+    PAY_AMT6 = st.number_input("Payment Amount (April)")
+
+st.divider()
 
 if st.button("🔮 Predict Default Risk"):
 
-    # Buat DataFrame sesuai dengan training data
     input_df = pd.DataFrame([{
         "LIMIT_BAL": LIMIT_BAL,
-        "SEX": SEX,
-        "EDUCATION": EDUCATION,
-        "MARRIAGE": MARRIAGE,
+        "SEX": gender_map[SEX],
+        "EDUCATION": education_map[EDUCATION],
+        "MARRIAGE": marriage_map[MARRIAGE],
         "AGE": AGE,
-        "PAY_0": PAY_0,
-        "PAY_2": PAY_2,
-        "PAY_3": PAY_3,
-        "PAY_4": PAY_4,
-        "PAY_5": PAY_5,
-        "PAY_6": PAY_6,
+        "PAY_0": payment_status_map[PAY_0],
+        "PAY_2": payment_status_map[PAY_2],
+        "PAY_3": payment_status_map[PAY_3],
+        "PAY_4": payment_status_map[PAY_4],
+        "PAY_5": payment_status_map[PAY_5],
+        "PAY_6": payment_status_map[PAY_6],
         "BILL_AMT1": BILL_AMT1,
         "BILL_AMT2": BILL_AMT2,
         "BILL_AMT3": BILL_AMT3,
@@ -80,7 +183,6 @@ if st.button("🔮 Predict Default Risk"):
         "PAY_AMT6": PAY_AMT6,
     }])
 
-    # Predict
     prediction = model.predict(input_df)[0]
     probability = model.predict_proba(input_df)[0][1]
 
@@ -88,17 +190,19 @@ if st.button("🔮 Predict Default Risk"):
 
     if prediction == 1:
         st.error(
-            f"⚠️ **Berpotensi DEFAULT**\n\n"
-            f"Probabilitas Default: **{probability:.2f}**"
+            f"⚠️ **High Risk of Default**\n\n"
+            f"Probability of Default: **{probability:.2f}**"
         )
     else:
         st.success(
-            f"✅ **TIDAK DEFAULT**\n\n"
-            f"Probabilitas Non-Default: **{1 - probability:.2f}**"
+            f"✅ **Low Risk of Default**\n\n"
+            f"Probability of Non-Default: **{1 - probability:.2f}**"
         )
+
 
 st.divider()
 st.caption(
-    "Model: Random Forest (Inference Pipeline without SMOTE) | "
-    "Project: MLOps Credit Default Prediction"
+    "Dataset: UCI Default of Credit Card Clients | "
+    "Model: Random Forest (Inference Pipeline) | "
+    "Project: MLOps Credit Risk Prediction"
 )
