@@ -2,9 +2,14 @@ import streamlit as st
 import pandas as pd
 import joblib
 
+# =========================
+# LOAD MODEL
+# =========================
 model = joblib.load("best_model.pkl")
 
-
+# =========================
+# PAGE CONFIG
+# =========================
 st.set_page_config(
     page_title="Credit Default Prediction",
     layout="centered"
@@ -13,16 +18,16 @@ st.set_page_config(
 st.title("💳 Credit Card Default Prediction")
 st.write(
     "This application predicts the **risk of credit card default** "
-    "based on customer demographic and payment behavior data."
+    "based on customer demographic and payment behavior."
 )
 
 st.divider()
 
+# =========================
+# MAPPINGS
+# =========================
 
-gender_map = {
-    "Male": 1,
-    "Female": 2
-}
+gender_map = {"Male": 1, "Female": 2}
 
 education_map = {
     "Graduate School": 1,
@@ -47,8 +52,11 @@ payment_status_map = {
     "4+ months late": 4
 }
 
-st.subheader("👤 Customer Information")
+# =========================
+# CUSTOMER INFORMATION
+# =========================
 
+st.subheader("👤 Customer Information")
 col1, col2 = st.columns(2)
 
 with col1:
@@ -67,7 +75,7 @@ with col1:
     EDUCATION = st.selectbox(
         "Education Level",
         options=list(education_map.keys()),
-        help="Highest level of education attained by the customer."
+        help="Highest education level attained."
     )
 
 with col2:
@@ -86,61 +94,62 @@ with col2:
 
 st.divider()
 
-st.subheader("📅 Payment Status History")
+# =========================
+# PAYMENT STATUS
+# =========================
 
+st.subheader("📅 Payment Status History")
 col1, col2 = st.columns(2)
 
 with col1:
     PAY_0 = st.selectbox(
         "Payment Status (September)",
         options=list(payment_status_map.keys()),
-        help="Customer payment behavior in September."
+        help="Payment behavior in September."
     )
-
     PAY_2 = st.selectbox(
         "Payment Status (August)",
         options=list(payment_status_map.keys()),
-        help="Customer payment behavior in August."
+        help="Payment behavior in August."
     )
-
     PAY_3 = st.selectbox(
         "Payment Status (July)",
         options=list(payment_status_map.keys()),
-        help="Customer payment behavior in July."
+        help="Payment behavior in July."
     )
 
 with col2:
     PAY_4 = st.selectbox(
         "Payment Status (June)",
         options=list(payment_status_map.keys()),
-        help="Customer payment behavior in June."
+        help="Payment behavior in June."
     )
-
     PAY_5 = st.selectbox(
         "Payment Status (May)",
         options=list(payment_status_map.keys()),
-        help="Customer payment behavior in May."
+        help="Payment behavior in May."
     )
-
     PAY_6 = st.selectbox(
         "Payment Status (April)",
         options=list(payment_status_map.keys()),
-        help="Customer payment behavior in April."
+        help="Payment behavior in April."
     )
 
 st.divider()
 
+# =========================
+# BILL & PAYMENT AMOUNTS
+# =========================
 
 st.subheader("💳 Billing & Payment Amounts")
-
 col1, col2 = st.columns(2)
 
 with col1:
-    BILL_AMT1 = st.number_input("Bill Amount (September)", help="Bill amount in September.")
+    BILL_AMT1 = st.number_input("Bill Amount (September)", help="Bill in September.")
     BILL_AMT2 = st.number_input("Bill Amount (August)")
     BILL_AMT3 = st.number_input("Bill Amount (July)")
 
-    PAY_AMT1 = st.number_input("Payment Amount (September)", help="Payment made in September.")
+    PAY_AMT1 = st.number_input("Payment Amount (September)", help="Payment in September.")
     PAY_AMT2 = st.number_input("Payment Amount (August)")
     PAY_AMT3 = st.number_input("Payment Amount (July)")
 
@@ -155,34 +164,73 @@ with col2:
 
 st.divider()
 
+# =========================
+# PREDICTION
+# =========================
+
 if st.button("🔮 Predict Default Risk"):
 
+    # ===== FEATURE ENGINEERING =====
+    TOTAL_BILL_AMT = (
+        BILL_AMT1 + BILL_AMT2 + BILL_AMT3 +
+        BILL_AMT4 + BILL_AMT5 + BILL_AMT6
+    )
+
+    TOTAL_PAY_AMT = (
+        PAY_AMT1 + PAY_AMT2 + PAY_AMT3 +
+        PAY_AMT4 + PAY_AMT5 + PAY_AMT6
+    )
+
+    PAYMENT_RATIO = TOTAL_PAY_AMT / (TOTAL_BILL_AMT + 1)
+
+    HAS_MISSED_PAYMENT = int(
+        any(status > 0 for status in [
+            payment_status_map[PAY_0],
+            payment_status_map[PAY_2],
+            payment_status_map[PAY_3],
+            payment_status_map[PAY_4],
+            payment_status_map[PAY_5],
+            payment_status_map[PAY_6],
+        ])
+    )
+
+    # ===== INPUT DATAFRAME =====
     input_df = pd.DataFrame([{
         "LIMIT_BAL": LIMIT_BAL,
         "SEX": gender_map[SEX],
         "EDUCATION": education_map[EDUCATION],
         "MARRIAGE": marriage_map[MARRIAGE],
         "AGE": AGE,
+
         "PAY_0": payment_status_map[PAY_0],
         "PAY_2": payment_status_map[PAY_2],
         "PAY_3": payment_status_map[PAY_3],
         "PAY_4": payment_status_map[PAY_4],
         "PAY_5": payment_status_map[PAY_5],
         "PAY_6": payment_status_map[PAY_6],
+
         "BILL_AMT1": BILL_AMT1,
         "BILL_AMT2": BILL_AMT2,
         "BILL_AMT3": BILL_AMT3,
         "BILL_AMT4": BILL_AMT4,
         "BILL_AMT5": BILL_AMT5,
         "BILL_AMT6": BILL_AMT6,
+
         "PAY_AMT1": PAY_AMT1,
         "PAY_AMT2": PAY_AMT2,
         "PAY_AMT3": PAY_AMT3,
         "PAY_AMT4": PAY_AMT4,
         "PAY_AMT5": PAY_AMT5,
         "PAY_AMT6": PAY_AMT6,
+
+        # ENGINEERED FEATURES
+        "TOTAL_BILL_AMT": TOTAL_BILL_AMT,
+        "TOTAL_PAY_AMT": TOTAL_PAY_AMT,
+        "PAYMENT_RATIO": PAYMENT_RATIO,
+        "HAS_MISSED_PAYMENT": HAS_MISSED_PAYMENT,
     }])
 
+    # ===== PREDICT =====
     prediction = model.predict(input_df)[0]
     probability = model.predict_proba(input_df)[0][1]
 
